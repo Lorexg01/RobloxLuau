@@ -1,0 +1,113 @@
+
+-- ALLOWS EXPLOITERS TO TALK WITH EACH OTHER WITHOUT FILTER AND LONG MAX CHAR ON OFFICIAL TEXTCHANNELS, FOUND BY ME
+--02/06/2026
+
+local textChatService = game:GetService("TextChatService")
+local rbxGeneral = textChatService.TextChannels.RBXGeneral
+
+for _, children in pairs(textChatService.TextChannels:GetDescendants()) do
+    if children:IsA("TextChannel") then
+        children.ShouldDeliverCallback = function(textChatMessage, targetTextSource)
+            if textChatMessage.Text == "" then
+                local combined = tostring(textChatMessage.PrefixText) .. tostring(textChatMessage.Metadata)
+				game:GetService("TextChatService").TextChannels.RBXGeneral:DisplaySystemMessage(combined)
+            end
+
+            return true
+        end
+    end
+end
+local Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
+local UserInputService = game:GetService("UserInputService")
+
+local localPlayer = Players.LocalPlayer
+local playerGui = localPlayer:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ChatSenderGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local frame = Instance.new("Frame")
+frame.Name = "MainFrame"
+frame.Size = UDim2.new(0, 300, 0, 120)
+frame.Position = UDim2.new(0.5, -150, 0.5, -60)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 8)
+uiCorner.Parent = frame
+
+local textBox = Instance.new("TextBox")
+textBox.Name = "MessageInput"
+textBox.Size = UDim2.new(0, 260, 0, 40)
+textBox.Position = UDim2.new(0.5, -130, 0, 15)
+textBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textBox.PlaceholderText = "Type message here..."
+textBox.PlaceholderColor3 = Color3.fromRGB(180, 180, 180)
+textBox.Text = ""
+textBox.Font = Enum.Font.SourceSans
+textBox.TextSize = 18
+textBox.BorderSizePixel = 0
+textBox.Parent = frame
+
+local textBoxCorner = Instance.new("UICorner")
+textBoxCorner.CornerRadius = UDim.new(0, 6)
+textBoxCorner.Parent = textBox
+
+local sendButton = Instance.new("TextButton")
+sendButton.Name = "SendButton"
+sendButton.Size = UDim2.new(0, 100, 0, 35)
+sendButton.Position = UDim2.new(0.5, -50, 0, 70)
+sendButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+sendButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+sendButton.Text = "Send"
+sendButton.Font = Enum.Font.SourceSansBold
+sendButton.TextSize = 18
+sendButton.BorderSizePixel = 0
+sendButton.Visible = false
+sendButton.Parent = frame
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 6)
+buttonCorner.Parent = sendButton
+
+local function sendMessage()
+	local message = textBox.Text
+	if message ~= "" then
+		local rbxGeneral = TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+		if rbxGeneral then
+			rbxGeneral:SendAsync("", message)
+		end
+		textBox.Text = ""
+	end
+end
+
+textBox.FocusLost:Connect(function(enterPressed)
+	if enterPressed then
+		sendMessage()
+	end
+end)
+
+sendButton.MouseButton1Click:Connect(sendMessage)
+
+local function updateButtonVisibility()
+	if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
+		sendButton.Visible = true
+		frame.Size = UDim2.new(0, 300, 0, 120)
+		frame.Position = UDim2.new(0.5, -150, 0.5, -60)
+		textBox.Position = UDim2.new(0.5, -130, 0, 15)
+	else
+		sendButton.Visible = false
+		frame.Size = UDim2.new(0, 300, 0, 70)
+		frame.Position = UDim2.new(0.5, -150, 0.5, -35)
+		textBox.Position = UDim2.new(0.5, -130, 0, 15)
+	end
+end
+
+updateButtonVisibility()
+UserInputService.LastInputTypeChanged:Connect(updateButtonVisibility)
